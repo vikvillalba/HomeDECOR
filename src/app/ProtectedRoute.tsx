@@ -1,17 +1,20 @@
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { Navigate } from 'react-router-dom';
-import { auth } from '../config/firebase';
+import { Navigate, Outlet } from "react-router-dom";
+import { useAuth } from "../features/auth/hooks/useAuth";
 
-function ProtectedRoute({ children }: { children: React.ReactNode}) {
-  const [user, loading] = useAuthState(auth);
+export function ProtectedRoute() {
+  const { isAuthenticated, isLoading } = useAuth();
 
-  if (loading) return (
-    <div className="min-h-screen bg-[#B8C4D4] flex items-center justify-center">
-      <p className="text-[#162B40] font-semibold">Cargando...</p>
-    </div>
-  );
+  if (isLoading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-[#EEF0F3]">
+        <p className="text-[#162B40]">Cargando sesión...</p>
+      </main>
+    );
+  }
 
-  return user ? children : <Navigate to="/login" replace />;
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <Outlet />;
 }
-
-export default ProtectedRoute;

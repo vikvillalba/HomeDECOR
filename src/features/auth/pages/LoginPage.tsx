@@ -30,7 +30,7 @@ export function LoginPage() {
 
         try {
             await loginWithEmail(email.trim(), password);
-            navigate("/dashboard");
+            navigate("/quotes");
         } catch (error) {
             console.error(error);
             setErrorMsg("Correo o contraseña incorrectos.");
@@ -123,7 +123,7 @@ export function LoginPage() {
                     disabled={isLoading}
                     className="w-full transform rounded-full bg-[#162B40] py-3.5 text-lg font-medium tracking-wide text-white shadow-md transition-colors duration-150 hover:bg-[#1f3b56] active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                    {isLoading ? "Ingresando..." : "Ingresar"}
+                    Ingresar
                 </button>
                 </div>
             </form>
