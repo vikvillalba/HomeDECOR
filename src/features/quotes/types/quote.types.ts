@@ -49,6 +49,11 @@ export type Quote = CreateQuoteDocument & {
   createdAt: Timestamp;
   updatedAt: Timestamp;
 
+  activeOrderId?: string | null;
+  convertedAt?: Timestamp | null;
+  convertedBy?: string | null;
+  cancelledAt?: Timestamp | null;
+  cancelledBy?: string | null;
   deletedAt?: Timestamp | null;
   deletedBy?: string | null;
 };
