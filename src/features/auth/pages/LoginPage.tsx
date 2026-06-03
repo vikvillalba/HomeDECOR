@@ -22,7 +22,7 @@ const [showPassword, setShowPassword] = useState(false)
     <div className=" bg-[#162B40] flex items-center justify-center relative"
       style={{ minHeight: 310, paddingTop: 40, paddingBottom: 0 }}>
 
-      <h1 className="text-white text-4xl font-light tracking-[3px] uppercase z-10">
+      <h1 className="text-white text-6xl font-extralight tracking-[3px] uppercase z-10">
         HOME <span className="font-bold">DECOR</span>
       </h1>
 
@@ -35,11 +35,11 @@ const [showPassword, setShowPassword] = useState(false)
     </div>
 
     <div className="flex-1 px-10 pt-12 pb-12 flex flex-col">
-      <h2 className="text-[#162B40] text-2xl font-bold mb-8">Iniciar Sesión</h2>
+      <h2 className="text-[#162B40] text-2xl font-semibold mb-8 tracking-wide">Iniciar Sesión</h2>
 
       <form className="space-y-5 max-w-[480px]">
         <div className="flex flex-col gap-1.5">
-          <label className="text-[#3a4d62] text-sm font-medium pl-1">Email</label>
+          <label className="text-[#3a4d62] text-m font-medium pl-1">Email</label>
           <input
             type="email"
             placeholder="ejemplo@correo.com"
@@ -48,7 +48,7 @@ const [showPassword, setShowPassword] = useState(false)
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label className="text-[#3a4d62] text-sm font-medium pl-1">Contraseña</label>
+          <label className="text-[#3a4d62] text-m font-medium pl-1">Contraseña</label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
@@ -68,7 +68,7 @@ const [showPassword, setShowPassword] = useState(false)
         <div className="mt-8">
           <button
             type="submit"
-            className="w-full bg-[#162B40] text-white py-3.5 rounded-full font-medium hover:bg-[#1f3b56] transition-colors shadow-md active:scale-[0.98] transform duration-150"
+            className="w-full bg-[#162B40] text-white py-3.5 text-lg tracking-wide rounded-full font-medium hover:bg-[#1f3b56] transition-colors shadow-md active:scale-[0.98] transform duration-150 "
           >
             Ingresar
           </button>
