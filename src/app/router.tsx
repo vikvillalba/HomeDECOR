@@ -4,7 +4,7 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '../config/firebase';
 import ProtectedRoute from './ProtectedRoute';
 import { DashboardCotizaciones } from '../features/cotizaciones/DashboardCotizaciones';
-import { Login } from '../features/auth/pages/LoginPage';
+import { LoginPage } from '../features/auth/pages/LoginPage';
 
 
 
@@ -17,7 +17,7 @@ export default function Router() {
     <Routes>
       <Route
         path="/login"
-        element={user ? <Navigate to="/dashboardcotizaciones" replace /> : <Login />}
+        element={user ? <Navigate to="/dashboardcotizaciones" replace /> : <LoginPage />}
       />
       <Route
         path="/dashboardcotizaciones"
