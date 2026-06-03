@@ -15,7 +15,7 @@ export function DocumentToolbar({
         type="button"
         onClick={onOpenSort}
         className="text-[#466582] transition hover:opacity-80"
-        aria-label="Ordenar cotizaciones"
+        aria-label="Ordenar documentos"
       >
         <ArrowDownUp size={31} strokeWidth={2.8} />
       </button>
@@ -24,7 +24,7 @@ export function DocumentToolbar({
         type="button"
         onClick={onOpenFilter}
         className="text-[#466582] transition hover:opacity-80"
-        aria-label="Filtrar cotizaciones"
+        aria-label="Filtrar documentos"
       >
         <Funnel size={33} strokeWidth={2.5} />
       </button>

@@ -1,6 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
-type QuotesPaginationProps = {
+type DocumentPaginationProps = {
   currentPage: number;
   hasPrevious: boolean;
   hasNext: boolean;
@@ -8,13 +8,13 @@ type QuotesPaginationProps = {
   onNext: () => void;
 };
 
-export function QuotesPagination({
+export function DocumentPagination({
   currentPage,
   hasPrevious,
   hasNext,
   onPrevious,
   onNext,
-}: QuotesPaginationProps) {
+}: DocumentPaginationProps) {
   return (
     <div className="mt-8 flex items-center justify-center gap-5">
       <button
