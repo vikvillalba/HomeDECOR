@@ -11,6 +11,13 @@ import { QuotesToolbar } from "../components/QuotesToolbar";
 import {QuoteSortPanel,type QuoteSortOrder} from "../components/QuoteSortPanel";
 import {QuoteFilterPanel, type QuoteStatusFilter} from "../components/QuoteFilterPanel";
 import { QuotesPagination } from "../components/QuotesPagination";
+
+type QuotesPageCacheEntry = {
+  quotes: Quote[];
+  nextCursor: QueryDocumentSnapshot<DocumentData> | null;
+  hasMore: boolean;
+};
+
 export function QuotesPage() {
   const navigate = useNavigate();
 
@@ -31,7 +38,9 @@ export function QuotesPage() {
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [pageCursors, setPageCursors] = useState<Array<QueryDocumentSnapshot<DocumentData> | null>>([null]);
+  const [pageCache, setPageCache] = useState<Array<QuotesPageCacheEntry | undefined>>([]);
   const requestIdRef = useRef(0);
+  const isPaginatingRef = useRef(false);
 
   useEffect(() => {
     const timeoutId = window.setTimeout(() => {
@@ -42,7 +51,8 @@ export function QuotesPage() {
   }, [searchTerm]);
 
   const loadQuotes = useCallback( async (
-    cursor: QueryDocumentSnapshot<DocumentData> | null = null
+    cursor: QueryDocumentSnapshot<DocumentData> | null = null,
+    cachePageIndex?: number
   ): Promise<boolean> => {
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
@@ -72,6 +82,18 @@ export function QuotesPage() {
       setNextCursor(result.nextCursor);
       setHasMore(result.hasMore);
 
+      if (cachePageIndex !== undefined) {
+        setPageCache((current) => {
+          const copy = [...current];
+          copy[cachePageIndex] = {
+            quotes: result.quotes,
+            nextCursor: result.nextCursor,
+            hasMore: result.hasMore,
+          };
+          return copy;
+        });
+      }
+
       return true;
     } catch (error) {
       if (requestId !== requestIdRef.current) {
@@ -94,47 +116,92 @@ export function QuotesPage() {
  useEffect(() => {
   setPageIndex(0);
   setPageCursors([null]);
-  void loadQuotes(null);
+  setPageCache([]);
+  void loadQuotes(null, 0);
 }, [loadQuotes]);
 
+  function showCachedPage(targetPageIndex: number) {
+    const cachedPage = pageCache[targetPageIndex];
+
+    if (!cachedPage) return false;
+
+    requestIdRef.current += 1;
+    setQuotes(cachedPage.quotes);
+    setNextCursor(cachedPage.nextCursor);
+    setHasMore(cachedPage.hasMore);
+    setPageIndex(targetPageIndex);
+    setErrorMsg("");
+    setIsLoading(false);
+
+    return true;
+  }
+
   async function handleNextPage() {
-    const nextPageIndex = pageIndex + 1;
-    const cachedCursor = pageCursors[nextPageIndex] ?? null;
-    const cursor = cachedCursor ?? nextCursor;
+    if (isPaginatingRef.current) return;
 
-    if (isLoading || !cursor) return;
-    if (!cachedCursor && !hasMore) return;
+    isPaginatingRef.current = true;
 
-    const didLoad = await loadQuotes(cursor);
+    try {
+      const nextPageIndex = pageIndex + 1;
+      const cachedPage = pageCache[nextPageIndex];
+      const cachedCursor = pageCursors[nextPageIndex] ?? null;
+      const cursor = cachedCursor ?? nextCursor;
 
-    if (!didLoad) return;
+      if (cachedPage && showCachedPage(nextPageIndex)) return;
 
-    if (!cachedCursor) {
-      setPageCursors((current) => {
-        const copy = [...current];
-        copy[nextPageIndex] = cursor;
-        return copy;
-      });
+      if (isLoading || !cursor) return;
+      if (!cachedCursor && !hasMore) return;
+
+      const didLoad = await loadQuotes(cursor, nextPageIndex);
+
+      if (!didLoad) return;
+
+      if (!cachedCursor) {
+        setPageCursors((current) => {
+          const copy = [...current];
+          copy[nextPageIndex] = cursor;
+          return copy;
+        });
+      }
+
+      setPageIndex(nextPageIndex);
+    } finally {
+      isPaginatingRef.current = false;
     }
-
-    setPageIndex(nextPageIndex);
   }
 
   async function handlePreviousPage() {
-    if (isLoading || pageIndex === 0) return;
+    if (isPaginatingRef.current) return;
 
-    const previousPageIndex = pageIndex - 1;
-    const previousCursor = pageCursors[previousPageIndex] ?? null;
-    const didLoad = await loadQuotes(previousCursor);
+    isPaginatingRef.current = true;
 
-    if (!didLoad) return;
+    try {
+      if (pageIndex === 0) return;
 
-    setPageIndex(previousPageIndex);
+      const previousPageIndex = pageIndex - 1;
+      if (showCachedPage(previousPageIndex)) return;
+
+      if (isLoading) return;
+
+      const previousCursor = pageCursors[previousPageIndex] ?? null;
+      const didLoad = await loadQuotes(previousCursor, previousPageIndex);
+
+      if (!didLoad) return;
+
+      setPageIndex(previousPageIndex);
+    } finally {
+      isPaginatingRef.current = false;
+    }
   }
 
   const cachedNextCursor = pageCursors[pageIndex + 1] ?? null;
+  const cachedNextPage = pageCache[pageIndex + 1];
+  const cachedPreviousPage = pageCache[pageIndex - 1];
+  const canGoPrevious =
+    pageIndex > 0 && (!isLoading || Boolean(cachedPreviousPage));
   const canGoNext =
-    Boolean(cachedNextCursor) || (hasMore && Boolean(nextCursor));
+    Boolean(cachedNextPage) ||
+    (!isLoading && (Boolean(cachedNextCursor) || (hasMore && Boolean(nextCursor))));
 
   return (
     <main className="min-h-dvh bg-[#EEF0F3]">
@@ -201,8 +268,8 @@ export function QuotesPage() {
 
         <QuotesPagination
           currentPage={pageIndex + 1}
-          hasPrevious={!isLoading && pageIndex > 0}
-          hasNext={!isLoading && canGoNext}
+          hasPrevious={canGoPrevious}
+          hasNext={canGoNext}
           onPrevious={handlePreviousPage}
           onNext={handleNextPage}
         />
