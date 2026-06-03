@@ -38,6 +38,7 @@ export type CreateQuoteDocument = {
   total: number;
   advancePayment: number;
   remainingPayment: number;
+  searchTokens: string[];
   status: QuoteStatus;
   createdBy: string;
   createdByEmail: string;

@@ -22,6 +22,7 @@ import type {
   CreateQuoteDocument,
   Quote,
 } from "../types/quote.types";
+import { normalizeSearchText } from "../utils/buildQuoteSearchTokens";
 
 const quotesCollection = collection(db, "quotes");
 
@@ -43,6 +44,7 @@ export type GetQuotesOptions = {
   sortOrder?: QuoteSortOrder;
   statusFilter?: QuoteStatusFilter;
   registrationDate?: Date | null;
+  searchTerm?: string;
   pageSize?: number;
   cursor?: QueryDocumentSnapshot<DocumentData> | null;
 };
@@ -94,6 +96,7 @@ export async function getQuoteDocuments(
     sortOrder = "recent",
     statusFilter = "active",
     registrationDate = null,
+    searchTerm = "",
     pageSize = 12,
     cursor = null,
   } = options;
@@ -126,6 +129,19 @@ export async function getQuoteDocuments(
     case "all":
     default:
       break;
+  }
+
+  const normalizedSearchTerm = normalizeSearchText(searchTerm);
+
+  if (normalizedSearchTerm.length >= 2) {
+    // Las cotizaciones anteriores a searchTokens no aparecerán en búsquedas; recrea los datos falsos o haz un backfill manual.
+    constraints.push(
+      where(
+        "searchTokens",
+        "array-contains",
+        normalizedSearchTerm
+      )
+    );
   }
 
   if (registrationDate) {

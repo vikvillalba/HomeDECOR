@@ -1,7 +1,8 @@
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { addDoc, collection, getDocs, Timestamp, updateDoc } from "firebase/firestore";
 import { auth } from "../config/firebase";
 import { db } from "../config/firebase";
 import { QUOTE_STATUS } from "../features/quotes/repositories/quoteRepository";
+import { buildQuoteSearchTokens } from "../features/quotes/utils/buildQuoteSearchTokens";
 import { calculateQuoteTotals } from "../features/quotes/utils/calculateQuoteTotals";
 import type { CreateQuoteInput } from "../features/quotes/types/quote.types";
 
@@ -116,6 +117,71 @@ function getRandomStatus() {
   return randomItem(statuses);
 }
 
+function asString(value: unknown) {
+  return typeof value === "string" ? value : "";
+}
+
+function asNumber(value: unknown) {
+  return typeof value === "number" && Number.isFinite(value) ? value : 0;
+}
+
+function buildInputFromStoredQuote(data: Record<string, unknown>): CreateQuoteInput {
+  const products = Array.isArray(data.products) ? data.products : [];
+
+  return {
+    clientName: asString(data.clientName),
+    clientPhone: asString(data.clientPhone),
+    clientAddress: asString(data.clientAddress),
+    products: products.map((product) => {
+      const productData =
+        product && typeof product === "object"
+          ? (product as Record<string, unknown>)
+          : {};
+
+      return {
+        area: asString(productData.area),
+        productName: asString(productData.productName),
+        model: asString(productData.model),
+        description: asString(productData.description),
+        width: asNumber(productData.width),
+        height: asNumber(productData.height),
+        quantity: asNumber(productData.quantity),
+        unitPrice: asNumber(productData.unitPrice),
+      };
+    }),
+    discountPercent: asNumber(data.discountPercent),
+    advancePayment: asNumber(data.advancePayment),
+  };
+}
+
+export async function backfillQuoteSearchTokens() {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("Necesitas iniciar sesiÃ³n antes de actualizar datos.");
+  }
+
+  const quotesCollection = collection(db, "quotes");
+  const snapshot = await getDocs(quotesCollection);
+  let updatedCount = 0;
+
+  for (const document of snapshot.docs) {
+    const data = document.data();
+
+    if (Array.isArray(data.searchTokens) && data.searchTokens.length > 0) {
+      continue;
+    }
+
+    await updateDoc(document.ref, {
+      searchTokens: buildQuoteSearchTokens(buildInputFromStoredQuote(data)),
+    });
+
+    updatedCount += 1;
+  }
+
+  return updatedCount;
+}
+
 export async function seedFakeQuotes() {
   const user = auth.currentUser;
 
@@ -128,6 +194,7 @@ export async function seedFakeQuotes() {
   for (let i = 1; i <= 30; i++) {
     const input = createFakeQuoteInput(i);
     const totals = calculateQuoteTotals(input);
+    const searchTokens = buildQuoteSearchTokens(input);
     const status = getRandomStatus();
     const createdAt = Timestamp.fromDate(randomDateWithinLastDays(30));
 
@@ -148,6 +215,7 @@ export async function seedFakeQuotes() {
       advancePayment: input.advancePayment,
       remainingPayment: totals.remainingPayment,
 
+      searchTokens,
       status,
 
       createdBy: user.uid,

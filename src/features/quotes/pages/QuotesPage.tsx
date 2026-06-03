@@ -1,5 +1,5 @@
 import {Plus} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type {DocumentData, QueryDocumentSnapshot} from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import { getQuotes } from "../services/quoteService";
@@ -11,16 +11,15 @@ import { QuotesToolbar } from "../components/QuotesToolbar";
 import {QuoteSortPanel,type QuoteSortOrder} from "../components/QuoteSortPanel";
 import {QuoteFilterPanel, type QuoteStatusFilter} from "../components/QuoteFilterPanel";
 import { QuotesPagination } from "../components/QuotesPagination";
-// import { seedFakeQuotes } from "../../../dev/seedQuotes";
 export function QuotesPage() {
   const navigate = useNavigate();
 
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   const [sortOrder, setSortOrder] = useState<QuoteSortOrder>("recent");
-  const [statusFilter, setStatusFilter] =
-    useState<QuoteStatusFilter>("active");
+  const [statusFilter, setStatusFilter] = useState<QuoteStatusFilter>("active");
   const [registrationDate, setRegistrationDate] = useState("");
 
   const [isSortOpen, setIsSortOpen] = useState(false);
@@ -32,8 +31,20 @@ export function QuotesPage() {
   const [hasMore, setHasMore] = useState(false);
   const [nextCursor, setNextCursor] = useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [pageCursors, setPageCursors] = useState<Array<QueryDocumentSnapshot<DocumentData> | null>>([null]);
+  const requestIdRef = useRef(0);
 
-  async function loadQuotes(cursor: QueryDocumentSnapshot<DocumentData> | null = null) {
+  useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  const loadQuotes = useCallback( async (cursor: QueryDocumentSnapshot<DocumentData> | null = null) => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+
     setIsLoading(true);
     setErrorMsg("");
 
@@ -46,61 +57,49 @@ export function QuotesPage() {
         sortOrder,
         statusFilter,
         registrationDate: selectedDate,
+        searchTerm: debouncedSearchTerm,
         pageSize: 12,
         cursor,
       });
+
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
 
       setQuotes(result.quotes);
       setNextCursor(result.nextCursor);
       setHasMore(result.hasMore);
     } catch (error) {
+      if (requestId !== requestIdRef.current) {
+        return;
+      }
+
       console.error(error);
       setErrorMsg("No se pudieron cargar las cotizaciones.");
     } finally {
-      setIsLoading(false);
+      if (requestId === requestIdRef.current) {
+        setIsLoading(false);
+      }
     }
-  }
+  },
+  [debouncedSearchTerm, registrationDate, sortOrder, statusFilter]
+);
 
-//   async function handleSeedQuotes() {
-//   try {
-//     await seedFakeQuotes();
-//     alert("Se crearon 30 cotizaciones falsas.");
-//     await loadQuotes(null);
-//   } catch (error) {
-//     console.error(error);
-//     alert("No se pudieron crear las cotizaciones falsas.");
-//   }
-// }
-
-  useEffect(() => {
-    setPageIndex(0);
-    setPageCursors([null]);
-    void loadQuotes(null);
-  }, [sortOrder, statusFilter, registrationDate]);
-
-  const filteredQuotes = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLowerCase();
-
-    if (!normalizedSearch) return quotes;
-
-    return quotes.filter((quote) => {
-      return (
-        quote.clientName.toLowerCase().includes(normalizedSearch) ||
-        quote.clientPhone.toLowerCase().includes(normalizedSearch) ||
-        quote.clientAddress.toLowerCase().includes(normalizedSearch)
-      );
-    });
-  }, [quotes, searchTerm]);
+ useEffect(() => {
+  setPageIndex(0);
+  setPageCursors([null]);
+  void loadQuotes(null);
+}, [loadQuotes]);
 
   async function handleNextPage() {
-    if (!hasMore || !nextCursor) return;
+    if (isLoading || !hasMore || !nextCursor) return;
 
     const nextPageIndex = pageIndex + 1;
 
     setPageCursors((current) => {
-      const copy = [...current];
-      copy[nextPageIndex] = nextCursor;
-      return copy;
+        const copy = [...current];
+        copy[nextPageIndex] = nextCursor;
+        return copy;
     });
 
     setPageIndex(nextPageIndex);
@@ -108,7 +107,7 @@ export function QuotesPage() {
   }
 
   async function handlePreviousPage() {
-    if (pageIndex === 0) return;
+    if (isLoading || pageIndex === 0) return;
 
     const previousPageIndex = pageIndex - 1;
     const previousCursor = pageCursors[previousPageIndex] ?? null;
@@ -124,14 +123,6 @@ export function QuotesPage() {
           <h1 className="text-4xl font-light tracking-wide text-[#162B40]">
             HOME <span className="font-bold">DECOR</span>
           </h1>
-          {/* <button
-            onClick={handleSeedQuotes}
-            className="mt-3 rounded-full bg-[#162B40] px-4 py-2 text-sm font-semibold text-white"
-            >
-            Crear 30 cotizaciones falsas
-          </button> */}
-
-          
 
           <div className="mt-4">
             <QuoteSearchBar
@@ -175,14 +166,14 @@ export function QuotesPage() {
             </p>
           )}
 
-          {!isLoading && filteredQuotes.length === 0 && (
+          {!isLoading && quotes.length === 0 && (
             <p className="mt-4 text-sm text-[#466582]">
               No hay cotizaciones para mostrar.
             </p>
           )}
 
           <div className="mt-6 grid grid-cols-2 gap-6">
-            {filteredQuotes.map((quote) => (
+            {quotes.map((quote) => (
               <QuoteCard key={quote.id} quote={quote} />
             ))}
           </div>
@@ -190,8 +181,8 @@ export function QuotesPage() {
 
         <QuotesPagination
           currentPage={pageIndex + 1}
-          hasPrevious={pageIndex > 0}
-          hasNext={hasMore}
+          hasPrevious={!isLoading && pageIndex > 0}
+          hasNext={!isLoading && hasMore}
           onPrevious={handlePreviousPage}
           onNext={handleNextPage}
         />

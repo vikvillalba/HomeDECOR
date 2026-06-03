@@ -1,5 +1,6 @@
 import type { User } from "firebase/auth";
 import type { CreateQuoteInput } from "../types/quote.types";
+import { buildQuoteSearchTokens } from "../utils/buildQuoteSearchTokens";
 import { calculateQuoteTotals } from "../utils/calculateQuoteTotals";
 import {
   QUOTE_STATUS,
@@ -13,6 +14,7 @@ import {
 
 export async function createQuote(input: CreateQuoteInput, user: User) {
   const totals = calculateQuoteTotals(input);
+  const searchTokens = buildQuoteSearchTokens(input);
 
   const quoteId = await createQuoteDocument({
     quoteNumber: Date.now(),
@@ -31,6 +33,7 @@ export async function createQuote(input: CreateQuoteInput, user: User) {
     advancePayment: input.advancePayment,
     remainingPayment: totals.remainingPayment,
 
+    searchTokens,
     status: QUOTE_STATUS.COTIZACION,
 
     createdBy: user.uid,
@@ -56,6 +59,7 @@ export async function updateQuoteFromInput(
   input: CreateQuoteInput
 ) {
   const totals = calculateQuoteTotals(input);
+  const searchTokens = buildQuoteSearchTokens(input);
 
   return updateQuoteDocument(quoteId, {
     clientName: input.clientName.trim(),
@@ -71,6 +75,8 @@ export async function updateQuoteFromInput(
 
     advancePayment: input.advancePayment,
     remainingPayment: totals.remainingPayment,
+
+    searchTokens,
   });
 }
 
