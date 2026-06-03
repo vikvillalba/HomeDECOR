@@ -68,13 +68,6 @@ export function buildQuoteSearchTokens(input: CreateQuoteInput): string[] {
   const values = [
     input.clientName,
     input.clientPhone,
-    input.clientAddress,
-    ...input.products.flatMap((product) => [
-      product.area,
-      product.productName,
-      product.model,
-      product.description,
-    ]),
   ];
 
   for (const value of values) {
