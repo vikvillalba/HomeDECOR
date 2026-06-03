@@ -168,10 +168,6 @@ export async function backfillQuoteSearchTokens() {
   for (const document of snapshot.docs) {
     const data = document.data();
 
-    if (Array.isArray(data.searchTokens) && data.searchTokens.length > 0) {
-      continue;
-    }
-
     await updateDoc(document.ref, {
       searchTokens: buildQuoteSearchTokens(buildInputFromStoredQuote(data)),
     });
