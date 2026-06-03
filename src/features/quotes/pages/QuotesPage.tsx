@@ -11,6 +11,7 @@ import { QuotesToolbar } from "../components/QuotesToolbar";
 import {QuoteSortPanel,type QuoteSortOrder} from "../components/QuoteSortPanel";
 import {QuoteFilterPanel, type QuoteStatusFilter} from "../components/QuoteFilterPanel";
 import { QuotesPagination } from "../components/QuotesPagination";
+
 export function QuotesPage() {
   const navigate = useNavigate();
 

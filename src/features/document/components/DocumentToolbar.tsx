@@ -1,14 +1,14 @@
 import { ArrowDownUp, Funnel } from "lucide-react";
 
-type QuotesToolbarProps = {
+type DocumentToolbarProps = {
   onOpenSort: () => void;
   onOpenFilter: () => void;
 };
 
-export function QuotesToolbar({
+export function DocumentToolbar({
   onOpenSort,
   onOpenFilter,
-}: QuotesToolbarProps) {
+}: DocumentToolbarProps) {
   return (
     <div className="flex items-center gap-4">
       <button

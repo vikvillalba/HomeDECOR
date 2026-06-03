@@ -1,11 +1,11 @@
 import { Search } from "lucide-react";
 
-type QuoteSearchBarProps = {
+type DocumentSearchBarProps = {
   value: string;
   onChange: (value: string) => void;
 };
 
-export function QuoteSearchBar({ value, onChange }: QuoteSearchBarProps) {
+export function DocumentSearchBar({ value, onChange }: DocumentSearchBarProps) {
   return (
     <div className="relative">
       <Search

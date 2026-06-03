@@ -1,11 +1,11 @@
-type QuoteTab = "quotes" | "orders";
+type DocumentTab = "quotes" | "orders";
 
-type QuoteTabsProps = {
-  activeTab: QuoteTab;
-  onChange: (tab: QuoteTab) => void;
+type DocumentTabsProps = {
+  activeTab: DocumentTab;
+  onChange: (tab: DocumentTab) => void;
 };
 
-export function QuoteTabs({ activeTab, onChange }: QuoteTabsProps) {
+export function DocumentTabs({ activeTab, onChange }: DocumentTabsProps) {
   return (
     <div className="mt-3 flex gap-2">
       <button
