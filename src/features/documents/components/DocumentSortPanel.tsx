@@ -1,18 +1,18 @@
 import { X } from "lucide-react";
 
-export type QuoteSortOrder = "recent" | "oldest";
+export type DocumentSortOrder = "recent" | "oldest";
 
-type QuoteSortPanelProps = {
-  value: QuoteSortOrder;
-  onChange: (value: QuoteSortOrder) => void;
+type DocumentSortPanelProps = {
+  value: DocumentSortOrder;
+  onChange: (value: DocumentSortOrder) => void;
   onClose: () => void;
 };
 
-export function QuoteSortPanel({
+export function DocumentSortPanel({
   value,
   onChange,
   onClose,
-}: QuoteSortPanelProps) {
+}: DocumentSortPanelProps) {
   return (
     <div className="absolute right-0 top-28 z-20 w-64 rounded-3xl bg-[#D9E1EC] p-5 shadow-xl">
       <div className="flex items-center justify-between">

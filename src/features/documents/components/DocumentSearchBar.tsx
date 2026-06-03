@@ -5,7 +5,10 @@ type DocumentSearchBarProps = {
   onChange: (value: string) => void;
 };
 
-export function DocumentSearchBar({ value, onChange }: DocumentSearchBarProps) {
+export function DocumentSearchBar({
+  value,
+  onChange,
+}: DocumentSearchBarProps) {
   return (
     <div className="relative">
       <Search

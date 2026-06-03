@@ -1,11 +1,14 @@
-type DocumentTab = "quotes" | "orders";
+export type DocumentTab = "quotes" | "orders";
 
 type DocumentTabsProps = {
   activeTab: DocumentTab;
   onChange: (tab: DocumentTab) => void;
 };
 
-export function DocumentTabs({ activeTab, onChange }: DocumentTabsProps) {
+export function DocumentTabs({
+  activeTab,
+  onChange,
+}: DocumentTabsProps) {
   return (
     <div className="mt-3 flex gap-2">
       <button
