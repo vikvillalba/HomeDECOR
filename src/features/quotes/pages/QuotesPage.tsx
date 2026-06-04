@@ -17,6 +17,10 @@ export function QuotesPage() {
   const [registrationDate, setRegistrationDate] = useState("");
   const [isSortOpen, setIsSortOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const[quoteSelected, setSelectedQuote] = useState<Quote>();
+  const[isDetailOpen, setDetailOpen] = useState(false);
+
   const loadQuotePage = useCallback(
     async ({
       cursor,
@@ -101,7 +105,7 @@ export function QuotesPage() {
       }}
       items={quotes}
       getItemKey={(quote) => quote.id}
-      renderItem={(quote) => <QuoteCard quote={quote} />}
+      renderItem={(quote) => <QuoteCard quote={quote} openDetails={() => {navigate(`/quotes/${quote.id}`);}}/>}
       floatingAction={
         <button
           onClick={() => navigate("/quotes/new")}

@@ -2,6 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "./ProtectedRoute";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { QuotesPage } from "../features/quotes/pages/QuotesPage";
+import { QuoteDetails } from "../features/quotes/pages/QuoteDetails";
 
 export const router = createBrowserRouter([
   {
@@ -18,6 +19,10 @@ export const router = createBrowserRouter([
       {
         path: "/quotes",
         element: <QuotesPage />,
+      },
+      {
+        path: "/quotes/:id",
+        element: <QuoteDetails />,
       },
     ],
   },

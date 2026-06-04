@@ -250,3 +250,20 @@ export async function cancelQuoteDocument(
     updatedAt: serverTimestamp(),
   });
 }
+
+
+export async function getQuoteDocumentById(quoteId: string): Promise<Quote | null>{
+  try{
+    const {quote, quoteRef} = await getQuoteOrThrow(quoteId);
+
+    const { id: _, ...quoteWithoutId } = quote;
+
+    return {
+      id: quoteRef.id,     
+      ...quoteWithoutId,   
+    } as Quote;
+    
+  } catch (error){
+    return null;
+  }
+}
