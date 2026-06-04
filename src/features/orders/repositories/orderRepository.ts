@@ -2,6 +2,7 @@ import {
   collection,
   doc,
   getDocs,
+  getDoc,
   limit,
   orderBy,
   query,
@@ -219,4 +220,30 @@ export async function cancelOrderDocument(
   });
 
   await batch.commit();
+}
+
+export async function getOrderDocumentById(orderId: string): Promise<Order | null> {
+  try {
+    const orderRef = doc(ordersCollection, orderId);
+    const docSnap = await getDoc(orderRef);
+
+    if (!docSnap.exists()) {
+      return null;
+    }
+
+    const order = {
+      id: docSnap.id,
+      ...docSnap.data(),
+    } as Order;
+
+    const { id: _, ...orderWithoutId } = order;
+
+    return {
+      id: orderRef.id,
+      ...orderWithoutId,
+    } as Order;
+
+  } catch (error) {
+    return null;
+  }
 }
