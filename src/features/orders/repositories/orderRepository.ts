@@ -41,6 +41,10 @@ export type OrderStatusFilter =
 export type GetOrdersOptions = {
   sortOrder?: OrderSortOrder;
   statusFilter?: OrderStatusFilter;
+  orderDateFrom?: Date | null;
+  orderDateTo?: Date | null;
+  deliveryDateFrom?: Date | null;
+  deliveryDateTo?: Date | null;
   searchTerm?: string;
   pageSize?: number;
   cursor?: QueryDocumentSnapshot<DocumentData> | null;
@@ -51,6 +55,39 @@ export type GetOrdersResult = {
   nextCursor: QueryDocumentSnapshot<DocumentData> | null;
   hasMore: boolean;
 };
+
+function getStartOfDay(date: Date) {
+  const startOfDay = new Date(date);
+  startOfDay.setHours(0, 0, 0, 0);
+
+  return startOfDay;
+}
+
+function getEndOfDay(date: Date) {
+  const endOfDay = new Date(date);
+  endOfDay.setHours(23, 59, 59, 999);
+
+  return endOfDay;
+}
+
+function addDateRangeConstraints(
+  constraints: QueryConstraint[],
+  field: "createdAt" | "deliveryDate",
+  fromDate?: Date | null,
+  toDate?: Date | null
+) {
+  if (fromDate) {
+    constraints.push(
+      where(field, ">=", Timestamp.fromDate(getStartOfDay(fromDate)))
+    );
+  }
+
+  if (toDate) {
+    constraints.push(
+      where(field, "<=", Timestamp.fromDate(getEndOfDay(toDate)))
+    );
+  }
+}
 
 export async function createOrderFromQuoteDocument(
   orderData: CreateOrderDocument
@@ -84,6 +121,10 @@ export async function getOrderDocuments(
   const {
     sortOrder = "recent",
     statusFilter = "pending",
+    orderDateFrom = null,
+    orderDateTo = null,
+    deliveryDateFrom = null,
+    deliveryDateTo = null,
     searchTerm = "",
     pageSize = 12,
     cursor = null,
@@ -126,6 +167,20 @@ export async function getOrderDocuments(
       )
     );
   }
+
+  addDateRangeConstraints(
+    constraints,
+    "createdAt",
+    orderDateFrom,
+    orderDateTo
+  );
+
+  addDateRangeConstraints(
+    constraints,
+    "deliveryDate",
+    deliveryDateFrom,
+    deliveryDateTo
+  );
 
   constraints.push(
     orderBy(
