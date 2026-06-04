@@ -54,6 +54,9 @@ export type Quote = CreateQuoteDocument & {
   convertedBy?: string | null;
   cancelledAt?: Timestamp | null;
   cancelledBy?: string | null;
+  reactivatedAt?: Timestamp | null;
+  reactivatedBy?: string | null;
+  reactivationReason?: string | null;
   deletedAt?: Timestamp | null;
   deletedBy?: string | null;
 };

@@ -251,19 +251,46 @@ export async function cancelQuoteDocument(
   });
 }
 
+export async function reactivateQuoteDocument(
+  quoteId: string,
+  userId: string,
+  reactivationReason?: string
+) {
+  const { quoteRef, quote } = await getQuoteOrThrow(quoteId);
 
-export async function getQuoteDocumentById(quoteId: string): Promise<Quote | null>{
-  try{
-    const {quote, quoteRef} = await getQuoteOrThrow(quoteId);
+  if (quote.status !== QUOTE_STATUS.CANCELADA) {
+    throw new Error(
+      "Solo se pueden reactivar cotizaciones canceladas."
+    );
+  }
 
-    const { id: _, ...quoteWithoutId } = quote;
+  if (quote.activeOrderId) {
+    throw new Error(
+      "No se puede reactivar una cotización con pedido activo."
+    );
+  }
+
+  await updateDoc(quoteRef, {
+    status: QUOTE_STATUS.COTIZACION,
+    activeOrderId: null,
+    reactivatedAt: serverTimestamp(),
+    reactivatedBy: userId,
+    reactivationReason: reactivationReason?.trim() || null,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+export async function getQuoteDocumentById(
+  quoteId: string
+): Promise<Quote | null> {
+  try {
+    const { quote, quoteRef } = await getQuoteOrThrow(quoteId);
 
     return {
-      id: quoteRef.id,     
-      ...quoteWithoutId,   
+      ...quote,
+      id: quoteRef.id,
     } as Quote;
-    
-  } catch (error){
+  } catch {
     return null;
   }
 }
