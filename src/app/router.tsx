@@ -3,6 +3,7 @@ import { ProtectedRoute } from "./ProtectedRoute";
 import { LoginPage } from "../features/auth/pages/LoginPage";
 import { QuotesPage } from "../features/quotes/pages/QuotesPage";
 import { QuoteDetails } from "../features/quotes/pages/QuoteDetails";
+import { OrdersPage } from "../features/orders/pages/OrdersPage";
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +24,10 @@ export const router = createBrowserRouter([
       {
         path: "/quotes/:id",
         element: <QuoteDetails />,
+      },
+      {
+        path: "/orders",
+        element: <OrdersPage />,
       },
     ],
   },

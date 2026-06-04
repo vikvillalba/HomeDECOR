@@ -1,26 +1,36 @@
 import { X } from "lucide-react";
 
 export type OrderStatusFilter =
-  | "received"
   | "pending"
-  | "delayed"
+  | "delivered"
+  | "cancelled"
   | "all";
 
 type OrderFilterPanelProps = {
   statusFilter: OrderStatusFilter;
-  registrationDate: string;
-  deliverDate: string;
+  orderDateFrom: string;
+  orderDateTo: string;
+  deliveryDateFrom: string;
+  deliveryDateTo: string;
   onStatusChange: (value: OrderStatusFilter) => void;
-  onDateChange: (value: string) => void;
+  onOrderDateFromChange: (value: string) => void;
+  onOrderDateToChange: (value: string) => void;
+  onDeliveryDateFromChange: (value: string) => void;
+  onDeliveryDateToChange: (value: string) => void;
   onClose: () => void;
 };
 
 export function OrderFilterPanel({
   statusFilter,
-  registrationDate,
-  deliverDate,
+  orderDateFrom,
+  orderDateTo,
+  deliveryDateFrom,
+  deliveryDateTo,
   onStatusChange,
-  onDateChange,
+  onOrderDateFromChange,
+  onOrderDateToChange,
+  onDeliveryDateFromChange,
+  onDeliveryDateToChange,
   onClose,
 }: OrderFilterPanelProps) {
   return (
@@ -40,8 +50,8 @@ export function OrderFilterPanel({
           <label className="flex cursor-pointer items-center gap-3 text-[#466582]">
             <input
               type="radio"
-              checked={statusFilter === "received"}
-              onChange={() => onStatusChange("received")}
+              checked={statusFilter === "delivered"}
+              onChange={() => onStatusChange("delivered")}
             />
             Recibidos
           </label>
@@ -58,10 +68,10 @@ export function OrderFilterPanel({
           <label className="flex cursor-pointer items-center gap-3 text-[#466582]">
             <input
               type="radio"
-              checked={statusFilter === "delayed"}
-              onChange={() => onStatusChange("delayed")}
+              checked={statusFilter === "cancelled"}
+              onChange={() => onStatusChange("cancelled")}
             />
-            Atrasados
+            Cancelados
           </label>
 
           <label className="flex cursor-pointer items-center gap-3 text-[#466582]">
@@ -75,29 +85,59 @@ export function OrderFilterPanel({
         </div>
 
         <div>
-          <label className="mb-2 block text-sm font-semibold text-[#466582]">
+          <label className="mb-2 block text-lg font-semibold text-[#466582]">
             Fecha de pedido
           </label>
 
-          <input
-            type="date"
-            value={registrationDate}
-            onChange={(event) => onDateChange(event.target.value)}
-            className="w-full rounded-full bg-white px-4 py-2 text-[#162B40] outline-none"
-          />
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+            <input
+              type="date"
+              value={orderDateFrom}
+              onChange={(event) =>
+                onOrderDateFromChange(event.target.value)
+              }
+              className="min-w-0 rounded-full bg-white px-2 py-1.5 text-xs text-[#162B40] outline-none"
+            />
+
+            <span className="text-[#466582]">a</span>
+
+            <input
+              type="date"
+              value={orderDateTo}
+              onChange={(event) =>
+                onOrderDateToChange(event.target.value)
+              }
+              className="min-w-0 rounded-full bg-white px-2 py-1.5 text-xs text-[#162B40] outline-none"
+            />
+          </div>
         </div>
 
-         <div>
-          <label className="mb-2 block text-sm font-semibold text-[#466582]">
+        <div>
+          <label className="mb-2 block text-lg font-semibold text-[#466582]">
             Fecha de entrega
           </label>
 
-          <input
-            type="date"
-            value={deliverDate}
-            onChange={(event) => onDateChange(event.target.value)}
-            className="w-full rounded-full bg-white px-4 py-2 text-[#162B40] outline-none"
-          />
+          <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-2">
+            <input
+              type="date"
+              value={deliveryDateFrom}
+              onChange={(event) =>
+                onDeliveryDateFromChange(event.target.value)
+              }
+              className="min-w-0 rounded-full bg-white px-2 py-1.5 text-xs text-[#162B40] outline-none"
+            />
+
+            <span className="text-[#466582]">a</span>
+
+            <input
+              type="date"
+              value={deliveryDateTo}
+              onChange={(event) =>
+                onDeliveryDateToChange(event.target.value)
+              }
+              className="min-w-0 rounded-full bg-white px-2 py-1.5 text-xs text-[#162B40] outline-none"
+            />
+          </div>
         </div>
       </div>
     </div>

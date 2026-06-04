@@ -9,6 +9,7 @@ import {
   getQuoteDocuments,
   updateQuoteDocument,
   getQuoteDocumentById,
+  reactivateQuoteDocument,
   type GetQuotesOptions,
   type UpdateQuoteDocument,
 } from "../repositories/quoteRepository";
@@ -85,6 +86,18 @@ export async function cancelQuote(quoteId: string, user: User) {
   return cancelQuoteDocument(quoteId, user.uid);
 }
 
-export async function getQuoteById(quoteId : string){
+export async function reactivateQuote(
+  quoteId: string,
+  user: User,
+  reactivationReason?: string
+) {
+  return reactivateQuoteDocument(
+    quoteId,
+    user.uid,
+    reactivationReason
+  );
+}
+
+export async function getQuoteById(quoteId: string) {
   return getQuoteDocumentById(quoteId);
 }
