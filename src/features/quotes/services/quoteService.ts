@@ -8,6 +8,7 @@ import {
   createQuoteDocument,
   getQuoteDocuments,
   updateQuoteDocument,
+  getQuoteDocumentById,
   type GetQuotesOptions,
   type UpdateQuoteDocument,
 } from "../repositories/quoteRepository";
@@ -82,4 +83,8 @@ export async function updateQuoteFromInput(
 
 export async function cancelQuote(quoteId: string, user: User) {
   return cancelQuoteDocument(quoteId, user.uid);
+}
+
+export async function getQuoteById(quoteId : string){
+  return getQuoteDocumentById(quoteId);
 }
